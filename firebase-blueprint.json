@@ -1,0 +1,74 @@
+{
+  "entities": {
+    "Bill": {
+      "title": "Bill",
+      "description": "Represents a bill record",
+      "type": "object",
+      "properties": {
+        "billNumber": {
+          "type": "string",
+          "description": "Unique identifier for the bill"
+        },
+        "partyName": {
+          "type": "string",
+          "description": "Name of the party/customer/vendor"
+        },
+        "date": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The date the bill was issued or due"
+        },
+        "amount": {
+          "type": "number",
+          "description": "The monetary value of the bill"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["paid", "unpaid"],
+          "description": "The payment status of the bill"
+        },
+        "userId": {
+          "type": "string",
+          "description": "The UID of the user who owns this bill"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the record was created"
+        }
+      },
+      "required": ["billNumber", "partyName", "date", "amount", "status", "userId", "createdAt"]
+    },
+    "Party": {
+      "title": "Party",
+      "description": "Represents a party for auto-completion",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Name of the party"
+        },
+        "userId": {
+          "type": "string",
+          "description": "The UID of the user who owns this party record"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the record was created"
+        }
+      },
+      "required": ["name", "userId", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/bills/{billId}": {
+      "schema": "Bill",
+      "description": "Collection of user bills"
+    },
+    "/parties/{partyId}": {
+      "schema": "Party",
+      "description": "Collection of unique party names for auto-completion"
+    }
+  }
+}
