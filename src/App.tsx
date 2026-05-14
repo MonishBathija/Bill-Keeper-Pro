@@ -7,9 +7,10 @@ import ImageImport from './components/bills/ImageImport';
 import StatCard from './components/layout/StatCard';
 import PartyFolders from './components/bills/PartyFolders';
 import RecycleBin from './components/bills/RecycleBin';
+import SettingsModal from './components/layout/SettingsModal';
 import { billService } from './services/billService';
-import { Bill, BillStatus, BillFormData } from './types';
-import { Wallet, CheckCircle, Clock, LayoutGrid, Folder, Trash2, Search, Filter, X, AlertCircle } from 'lucide-react';
+import { Bill, BillStatus, BillFormData, AppSettings } from './types';
+import { Wallet, CheckCircle, Clock, LayoutGrid, Folder, Trash2, Search, Filter, X, AlertCircle, Settings as SettingsIcon } from 'lucide-react';
 import { cn } from './lib/utils';
 import { doc, getDocFromServer } from 'firebase/firestore';
 import { db } from './lib/firebase';
@@ -34,7 +35,19 @@ function Dashboard({ user }: { user: User }) {
   const [editingBill, setEditingBill] = useState<Bill | null>(null);
   const [confirmPurge, setConfirmPurge] = useState(false);
   const [isPurging, setIsPurging] = useState(false);
+  const [appSettings, setAppSettings] = useState<AppSettings | null>(null);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+
+  useEffect(() => {
+    const loadSettings = async () => {
+      const settings = await billService.getSettings(user.uid);
+      if (settings) {
+        setAppSettings(settings);
+      }
+    };
+    loadSettings();
+  }, [user.uid]);
 
   useEffect(() => {
     if (notification) {
@@ -212,6 +225,16 @@ function Dashboard({ user }: { user: User }) {
     }
   };
 
+  const handleSaveSettings = async (data: { appTitle: string; companyName: string }) => {
+    try {
+      await billService.saveSettings(user.uid, data);
+      setAppSettings({ ...data, userId: user.uid, updatedAt: new Date() });
+      showNotification("Personalization saved!", "success");
+    } catch (err: any) {
+      showNotification("Failed to save settings", "error");
+    }
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-8">
       {/* Shared Notification */}
@@ -240,10 +263,21 @@ function Dashboard({ user }: { user: User }) {
       {/* Header & Reset */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
         <div>
-          <h1 className="text-3xl font-black text-gray-900 tracking-tight">FinTrack Pro</h1>
-          <p className="text-gray-500 font-medium">Professional Bill Management System</p>
+          <h1 className="text-3xl font-black text-gray-900 tracking-tight">
+            {appSettings?.appTitle || "BillKeeper Pro"}
+          </h1>
+          <p className="text-gray-500 font-medium">
+            {appSettings?.companyName ? `${appSettings.companyName} Management` : "Professional Bill Management System"}
+          </p>
         </div>
         <div className="flex items-center gap-3">
+          <button
+            onClick={() => setIsSettingsOpen(true)}
+            className="p-3 bg-gray-50 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-2xl transition-all"
+            title="Settings"
+          >
+            <SettingsIcon size={20} />
+          </button>
           <div className="flex flex-col items-end">
             <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-full mb-1">System Active</span>
             <span className="text-xs text-gray-400 font-mono text-right">ID: {user.uid.slice(0, 8)}...</span>
@@ -471,6 +505,13 @@ function Dashboard({ user }: { user: User }) {
           />
         )}
       </AnimatePresence>
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        currentTitle={appSettings?.appTitle || "BillKeeper Pro"}
+        currentCompanyName={appSettings?.companyName || ""}
+        onSave={handleSaveSettings}
+      />
     </div>
   );
 }

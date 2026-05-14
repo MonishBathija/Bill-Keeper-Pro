@@ -30,3 +30,11 @@ export interface Party {
   userId: string;
   createdAt: any;
 }
+
+export interface AppSettings {
+  id?: string;
+  appTitle: string;
+  companyName: string;
+  userId: string;
+  updatedAt: any;
+}

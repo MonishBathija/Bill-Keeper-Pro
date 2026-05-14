@@ -59,6 +59,31 @@
         }
       },
       "required": ["name", "userId", "createdAt"]
+    },
+    "AppSettings": {
+      "title": "AppSettings",
+      "description": "User personalization settings",
+      "type": "object",
+      "properties": {
+        "appTitle": {
+          "type": "string",
+          "description": "Custom title for the application"
+        },
+        "companyName": {
+          "type": "string",
+          "description": "Company name used for reports and headers"
+        },
+        "userId": {
+          "type": "string",
+          "description": "The UID of the user who owns these settings"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the settings were last updated"
+        }
+      },
+      "required": ["appTitle", "companyName", "userId", "updatedAt"]
     }
   },
   "firestore": {
@@ -69,6 +94,10 @@
     "/parties/{partyId}": {
       "schema": "Party",
       "description": "Collection of unique party names for auto-completion"
+    },
+    "/settings/{settingId}": {
+      "schema": "AppSettings",
+      "description": "User specific app settings"
     }
   }
 }

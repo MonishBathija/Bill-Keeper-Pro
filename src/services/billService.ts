@@ -372,5 +372,41 @@ export const billService = {
     } catch (error) {
       handleFirestoreError(error, OperationType.DELETE, `parties/${name}`);
     }
+  },
+
+  // Settings
+  getSettings: async (userId: string): Promise<any | null> => {
+    try {
+      const q = query(collection(db, 'settings'), where('userId', '==', userId));
+      const snapshot = await getDocs(q);
+      if (snapshot.empty) return null;
+      return { id: snapshot.docs[0].id, ...snapshot.docs[0].data() };
+    } catch (error) {
+      handleFirestoreError(error, OperationType.GET, 'settings');
+      return null;
+    }
+  },
+
+  saveSettings: async (userId: string, data: { appTitle: string; companyName: string }) => {
+    try {
+      const q = query(collection(db, 'settings'), where('userId', '==', userId));
+      const snapshot = await getDocs(q);
+      
+      if (snapshot.empty) {
+        await addDoc(collection(db, 'settings'), {
+          ...data,
+          userId,
+          updatedAt: serverTimestamp()
+        });
+      } else {
+        const docRef = doc(db, 'settings', snapshot.docs[0].id);
+        await updateDoc(docRef, {
+          ...data,
+          updatedAt: serverTimestamp()
+        });
+      }
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, 'settings/save');
+    }
   }
 };
